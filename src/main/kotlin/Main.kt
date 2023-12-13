@@ -1,35 +1,56 @@
 package net.nzti
 
-import kotlin.contracts.contract
-
 fun main() {
     /*
-    Game 66: 11 red, 9 blue, 4 green; 8 red, 8 blue; 9 red, 7 blue; 1 blue, 12 green, 4 red; 2 red, 11 blue, 10 green
-    12 red cubes, 13 green cubes, and 14 blue cubes
+    ...788.............................54.........501...........555.........270........
+    ..../..*963........................*..860......................*....53...../.......
+    ............*......41..481+.......462....$..187......678.......420....-............
+
+    Steps, think of it like a spreadsheet:
+        1. Get to non-period, index
+        2. Check previous value index - 1
+        3. Check next value index + 1
+        4. Check above, index of previous row
+        6. Check above, index of previous row - 1
+        7. Check above, index of previous row + 1
+        8. Check below, index of next row
+        9. Check below, index of next row - 1
+       10. Check below, index of next row + 1
+
+       Do above using x,y coordinates
      */
-    val inputList: MutableList<String> = readInput("day2_input.txt")
+    val inputList: MutableList<String> = readInput("day3_input.txt")
     val result: MutableList<Int> = mutableListOf()
-    val comparison: Map<String, Int> = mapOf("red" to 12, "green" to 13, "blue" to 14)
-    inputList.forEach {
-        // Get number of game being played
-        val game: String = it.substring(0, it.indexOf(":"))
-        val gameNum: Int = it.substring(it.indexOf(" ") + 1, game.length).toInt()
 
+    // Loop through each line of input
+    for (i in inputList.indices) {
+        // Loop through each Char in input String
+        for (j in inputList[i].indices) {
+            // Skip periods and numbers
+            if (inputList[i][j] == '.' || inputList[i][j].isDigit()) continue
 
-        // Add to list map of color to number seen
-        val cubes: List<String> = it.substring(it.indexOf(":") + 1, it.length).split(';')
-        println("Cubes: $cubes")
-        val cubeMap: MutableList<Map<String, Int>> = mutableListOf()
-        cubes.forEach{ cube ->
-            val colors: List<String> = cube.removePrefix(" ").split(", ")
-
-            colors.forEach { color ->
-                val numColor = color.split(' ')
-                val colorMap: Map<String, Int> = mapOf(numColor[1] to numColor[0].toInt())
-                cubeMap.add(colorMap)
+            /*
+            Special character, check for numbers
+            (x - 1, y - 1) | (x, y - 1) | (x + 1, y - 1)
+            (x - 1, y)     | (x, y)     | (x + 1, y)
+            (x - 1, y + 1) | (x, y + 1) | (x + 1, y + 1)
+             */
+            val coordList: List<Pair<Int, Int>> = getAdjacentCoords(i, j)
+            coordList.forEach{ coord ->
+                // Check each Pair compared to inputList[i][j]
             }
         }
-        println(cubeMap)
     }
+
     println(result.sum())
+}
+
+fun getAdjacentCoords(x: Int, y: Int): List<Pair<Int, Int>> {
+    // TODO: Change to each character at coords instead of returning coords
+    // List<Char>
+    return listOf(
+        Pair(x - 1, y - 1), Pair(x, y - 1), Pair(x + 1, y - 1),
+        Pair(x - 1, y),     Pair(x, y),     Pair(x + 1, y),
+        Pair(x - 1, y + 1), Pair(x, y + 1), Pair(x + 1, y + 1),
+    )
 }
