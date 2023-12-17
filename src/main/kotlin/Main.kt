@@ -94,7 +94,10 @@ fun main() {
                 }
             }
 
-            coordsList.forEach { coord ->
+            val pairComparator = compareBy<Pair<Int, Int>>{ it.first }
+            val coordsListSorted = coordsList.sortedWith(pairComparator.thenBy{ it.second })
+
+            coordsListSorted.forEach { coord ->
                 // TODO: Add list of coords found and skip if found already
                 val numsFound: MutableList<Char> = mutableListOf(inputList[coord.first][coord.second])
                 xHasPrev = coord.second - 1 >= 0
