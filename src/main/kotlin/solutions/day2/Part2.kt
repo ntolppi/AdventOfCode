@@ -1,4 +1,6 @@
-package net.nzti
+package net.nzti.solutions.day2
+
+import net.nzti.readInput
 
 fun main() {
     /*

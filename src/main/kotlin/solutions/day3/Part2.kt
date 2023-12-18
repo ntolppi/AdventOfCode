@@ -1,7 +1,6 @@
-package net.nzti
+package net.nzti.solutions.day3
 
-import io.ktor.http.*
-import kotlin.contracts.contract
+import net.nzti.readInput
 
 fun main() {
     /*
