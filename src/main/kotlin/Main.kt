@@ -1,5 +1,7 @@
 package net.nzti
 
+import kotlin.contracts.contract
+
 fun main() {
     /*
     ...788.............................54.........501...........555.........270........
@@ -24,110 +26,148 @@ fun main() {
 
     // Loop through each line of input
     val numList: MutableList<MutableList<Char>> = mutableListOf()
+    val gearList: MutableList<MutableList<Char>> = mutableListOf()
+
+    // List of coordinaates of special characters
+    val specialCharCoordsList: MutableList<Pair<Int, Int>> = mutableListOf()
     for (y in inputList.indices) {
         // Loop through each Char in input String
         for (x in inputList[y].indices) {
             // Skip periods and numbers
             if (inputList[y][x] == '.' || inputList[y][x].isDigit()) continue
-
-            /*
-            Special character, check for numbers
-            (x - 1, y - 1) | (x, y - 1) | (x + 1, y - 1)
-            (x - 1, y)     | (x, y)     | (x + 1, y)
-            (x - 1, y + 1) | (x, y + 1) | (x + 1, y + 1)
-             */
-            var xHasPrev: Boolean = x - 1 >= 0
-            val yHasPrev: Boolean = y - 1 >= 0
-
-            var xHasNext: Boolean = x + 1 < inputList[y].length
-            val yHasNext: Boolean = y + 1 < inputList.size
-
-            val coordsList: MutableList<Pair<Int, Int>> = mutableListOf()
-
-            var char: Char
-            if (yHasPrev) {
-                char = inputList[y - 1][x]
-                if (char.isDigit())
-                    coordsList.add(Pair(y - 1, x))
-            }
-
-            if (yHasNext) {
-                char = inputList[y + 1][x]
-                if (char.isDigit())
-                    coordsList.add(Pair(y + 1, x))
-            }
-
-            if (xHasPrev) {
-                char = inputList[y][x - 1]
-                if (char.isDigit())
-                    coordsList.add(Pair(y, x - 1))
-
-                if (yHasPrev) {
-                    char = inputList[y - 1][x - 1]
-                    if (char.isDigit())
-                        coordsList.add(Pair(y - 1, x - 1))
-                }
-
-                if (yHasNext) {
-                    char = inputList[y + 1][x - 1]
-                    if (char.isDigit())
-                        coordsList.add(Pair(y + 1, x - 1))
-                }
-
-            }
-
-            if (xHasNext) {
-                char = inputList[y][x + 1]
-                if (char.isDigit())
-                    coordsList.add(Pair(y, x + 1))
-
-                if (yHasPrev) {
-                    char = inputList[y - 1][x + 1]
-                    if (char.isDigit())
-                        coordsList.add(Pair(y - 1, x + 1))
-                }
-
-                if (yHasNext) {
-                    char = inputList[y + 1][x + 1]
-                    if (char.isDigit())
-                        coordsList.add(Pair(y + 1, x + 1))
-                }
-            }
-
-            val pairComparator = compareBy<Pair<Int, Int>>{ it.first }
-            val coordsListSorted = coordsList.sortedWith(pairComparator.thenBy{ it.second })
-
-            coordsListSorted.forEach { coord ->
-                // TODO: Add list of coords found and skip if found already
-                val numsFound: MutableList<Char> = mutableListOf(inputList[coord.first][coord.second])
-                xHasPrev = coord.second - 1 >= 0
-                xHasNext = coord.second + 1 < inputList[y].length
-
-                var second: Int = coord.second
-                while (xHasPrev && inputList[coord.first][second].isDigit()) {
-                    second -= 1
-                    xHasPrev = second - 1 >= 0
-
-                    if (inputList[coord.first][second].isDigit())
-                        numsFound.addFirst(inputList[coord.first][second])
-                }
-
-                second = coord.second
-                while (xHasNext && inputList[coord.first][second].isDigit()) {
-                    second += 1
-                    if (inputList[coord.first][second].isDigit())
-                        numsFound.addFirst(inputList[coord.first][second])
-                    xHasNext = second + 1 < inputList[y].length
-                }
-
-                numList.add(numsFound)
-                // val numFound: Int = numsFound.joinToString().toInt()
-                println("$coord $numsFound")
-            }
-
+            specialCharCoordsList.add(Pair(x, y))
         }
     }
 
+    val coordsList: MutableList<Pair<Int, Int>> = mutableListOf()
+    specialCharCoordsList.forEach {
+
+        /*
+        Special character, check for numbers
+        (x - 1, y - 1) | (x, y - 1) | (x + 1, y - 1)
+        (x - 1, y)     | (x, y)     | (x + 1, y)
+        (x - 1, y + 1) | (x, y + 1) | (x + 1, y + 1)
+         */
+        val x = it.first
+        val y = it.second
+
+        var xHasPrev: Boolean = x - 1 >= 0
+        val yHasPrev: Boolean = y - 1 >= 0
+
+        var xHasNext: Boolean = x + 1 < inputList[y].length
+        val yHasNext: Boolean = y + 1 < inputList.size
+
+        var char: Char
+        if (yHasPrev) {
+            char = inputList[y - 1][x]
+            if (char.isDigit())
+                coordsList.add(Pair(y - 1, x))
+        }
+
+        if (yHasNext) {
+            char = inputList[y + 1][x]
+            if (char.isDigit())
+                coordsList.add(Pair(y + 1, x))
+        }
+
+        if (xHasPrev) {
+            char = inputList[y][x - 1]
+            if (char.isDigit())
+                coordsList.add(Pair(y, x - 1))
+
+            if (yHasPrev) {
+                char = inputList[y - 1][x - 1]
+                if (char.isDigit())
+                    coordsList.add(Pair(y - 1, x - 1))
+            }
+
+            if (yHasNext) {
+                char = inputList[y + 1][x - 1]
+                if (char.isDigit())
+                    coordsList.add(Pair(y + 1, x - 1))
+            }
+
+        }
+
+        if (xHasNext) {
+            char = inputList[y][x + 1]
+            if (char.isDigit())
+                coordsList.add(Pair(y, x + 1))
+
+            if (yHasPrev) {
+                char = inputList[y - 1][x + 1]
+                if (char.isDigit())
+                    coordsList.add(Pair(y - 1, x + 1))
+            }
+
+            if (yHasNext) {
+                char = inputList[y + 1][x + 1]
+                if (char.isDigit())
+                    coordsList.add(Pair(y + 1, x + 1))
+            }
+        }
+    }
+
+    /*
+    Loop through each coordinate
+    Check adjacent coordinates for digits
+    Coordinate is a gear if it is a * and 2 numbers are adjacent
+     */
+    val coordsChecked: MutableList<Pair<Int, Int>> = mutableListOf()
+    coordsList.forEach coordsListLoop@ { coord ->
+
+        // Check if coordsChecked already contains coordinates
+        if (coord in coordsChecked) return@coordsListLoop
+
+        // Add coord to list of coordsChecked
+        coordsChecked.add(coord)
+
+        val numsFound: MutableList<Char> = mutableListOf(inputList[coord.first][coord.second])
+        var xHasPrev = coord.second - 1 >= 0
+        var xHasNext = coord.second + 1 < inputList[coord.first].length
+
+        var second: Int = coord.second
+        while (xHasPrev && inputList[coord.first][second].isDigit()) {
+            second -= 1
+            xHasPrev = second - 1 >= 0
+
+            if (Pair(coord.first, second) in coordsChecked) continue
+
+            if (inputList[coord.first][second].isDigit())
+                numsFound.addFirst(inputList[coord.first][second])
+
+            // Add coord to checked coords
+            coordsChecked.add(Pair(coord.first, second))
+        }
+
+        second = coord.second
+        while (xHasNext && inputList[coord.first][second].isDigit()) {
+            second += 1
+            xHasNext = second + 1 < inputList[coord.first].length
+
+            if (Pair(coord.first, second) in coordsChecked) continue
+
+            if (inputList[coord.first][second].isDigit())
+                numsFound.add(inputList[coord.first][second])
+
+            // Add coord to checked coords
+            coordsChecked.add(Pair(coord.first, second))
+        }
+
+        numList.add(numsFound)
+        if (inputList[coord.first][coord.second] == '*') {
+            println("Gear: $coord numsFound")
+            gearList.add(numsFound)
+        }
+        // val numFound: Int = numsFound.joinToString().toInt()
+        println("$coord $numsFound")
+    }
     println(numList)
+    println(gearList)
+    // val nums: MutableList<Int> = mutableListOf()
+    // val emptyChar: CharSequence
+    numList.forEach{
+        result += it.joinToString(" ").replace(" ", "").toInt()
+    }
     println(result.sum())
 }
