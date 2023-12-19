@@ -6,8 +6,11 @@ fun main() {
     val inputList: MutableList<String> = readInput("day4_input.txt")
 
     val numOfWinningNums: MutableList<Int> = mutableListOf()
+    val numMap: MutableMap<Int, Int> = mutableMapOf()
     inputList.forEach { card ->
         println(card)
+        val cardNum: Int = card.substring(card.indexOf(' '), card.indexOf(':')).replace(" ", "").toInt()
+        println("Card $cardNum")
 
         val winningNums: MutableList<Int> = mutableListOf()
         card.substring(card.indexOf(':') + 2, card.indexOf('|') - 1).split(' ').forEach winningNumsForEach@ {
@@ -25,10 +28,10 @@ fun main() {
 
         // Check how many winningNums are in nums
         println(winningNums.toSet() intersect nums.toSet())
-        numOfWinningNums.add((winningNums.toSet() intersect nums.toSet()).size)
+        numMap[cardNum] = (winningNums.toSet() intersect nums.toSet()).size
     }
-    // numOfWinningNums.forEach numOfWinningNumsForEach@ {num ->
-    //     println(num)
+    println(numMap)
+    // for (idx in numOfWinningNums.indices) {
     // }
 }
 
