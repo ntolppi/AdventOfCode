@@ -6,6 +6,7 @@ fun main() {
     val inputList: MutableList<String> = readInput("day4_input.txt")
 
     val numOfWinningNums: MutableList<Int> = mutableListOf()
+    val pointsList: MutableList<Int> = mutableListOf()
     inputList.forEach { card ->
         println(card)
 
@@ -27,9 +28,11 @@ fun main() {
         println(winningNums.toSet() intersect nums.toSet())
         numOfWinningNums.add((winningNums.toSet() intersect nums.toSet()).size)
     }
-    // numOfWinningNums.forEach numOfWinningNumsForEach@ {num ->
-    //     println(num)
-    // }
+    numOfWinningNums.forEach numOfWinningNumsForEach@ {num ->
+        if (num == 0) return@numOfWinningNumsForEach
+        val points: Int = 2.0.pow(num - 1).toInt()
+        println("$num = $points")
+        pointsList.add(points)
+    }
+    println(pointsList.sum())
 }
-
-//fun getNumScratchcards()
