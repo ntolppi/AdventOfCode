@@ -31,16 +31,25 @@ fun main() {
         numMap[cardNum] = (winningNums.toSet() intersect nums.toSet()).size
     }
 
-    var numCardsWon: Long =  0
+    var numCardsWonTotal: Long =  0
+    val solutionsMap: MutableMap<Int, Long> = mutableMapOf()
     numMap.forEach { card ->
         println("Processing Card ${card.key} ${card.value}")
-        numCardsWon += getNums(card.toPair(), numMap)
+
+        // Get the number of cards won and solutions found
+        val (numCardsWon, solutions) = getNums(card.toPair(), numMap, solutionsMap)
+
+        // Increase the total number of cards won
+        numCardsWonTotal += numCardsWon
+
+        // Update solutions map
+        solutionsMap.putAll(solutions)
     }
 
     println(numMap)
 
     // Cards won plus number of original cards
-    println(numCardsWon + numMap.size)
+    println(numCardsWonTotal + numMap.size)
 }
 
 
@@ -51,30 +60,31 @@ fun main() {
  * @param numMap        Input map
  * @param solutionsMap  Map of solved values
  * @param stopNum       Value to stop at if encountered
+ * @return              Number of cards won for the original starting card
  */
 fun getNums(
     start: Pair<Int, Int>,
     numMap: MutableMap<Int, Int> = mutableMapOf(),
     solutionsMap: MutableMap<Int, Long> = mutableMapOf(),
     stopNum: Long = 0
-): Long {
+): Pair<Long, MutableMap<Int, Long>> {
 
     if (start.second.toLong() == stopNum) // Reached card that hasn't won anymore cards
-        return 0
+        return Pair(0, solutionsMap)
 
     // Already solved for this number, return solution
     if (solutionsMap.containsKey(start.first))
-        return solutionsMap.getOrDefault(start.first, stopNum)
+        return Pair(solutionsMap.getOrDefault(start.first, stopNum), solutionsMap)
 
     // Get list of cards won
     // Will be 2 10, 3 10, 4 10, 5 10, 6 5
     var result: Long = start.second.toLong()
     for ( i in start.first + 1..start.first + start.second) {
-        result += getNums(Pair(i, numMap.getOrDefault(i, stopNum.toInt())), numMap)
+        result += getNums(Pair(i, numMap.getOrDefault(i, stopNum.toInt())), numMap, solutionsMap).first
     }
 
     // Solved, add to solutions map
     solutionsMap[start.first] = result
 
-    return result
+    return Pair(result, solutionsMap)
 }
