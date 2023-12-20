@@ -1,11 +1,11 @@
 package net.nzti
 
+import kotlin.math.exp
 import kotlin.math.pow
 
 fun main() {
     val inputList: MutableList<String> = readInput("day4_input.txt")
 
-    val numOfWinningNums: MutableList<Int> = mutableListOf()
     val numMap: MutableMap<Int, Int> = mutableMapOf()
     inputList.forEach { card ->
         println(card)
@@ -31,8 +31,46 @@ fun main() {
         numMap[cardNum] = (winningNums.toSet() intersect nums.toSet()).size
     }
     println(numMap)
-    // for (idx in numOfWinningNums.indices) {
-    // }
+    println(getScratchcardsWon(numMap))
 }
 
-//fun getNumScratchcards()
+/**
+ * Loop through each of the cards
+ * Get copies of the numbers won
+ * Card 1 wins 6 cards: 2, 3, 4, 5, 6, 7
+ * Copy of card 2 wins 10 cards: 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+ * etc...
+ */
+fun getScratchcardsWon(
+    numMap: MutableMap<Int, Int>
+): Long {
+    var numCardsWon: Long =  0
+    numMap.forEach { card ->
+        println("Processing Card ${card.key} ${card.value}")
+        numCardsWon += getNums(card.toPair(), numMap)
+    }
+    return numCardsWon
+}
+
+/**
+ * Given a num get the list of copies of the num
+ * Example: Given start 1 and steps 6, return 2, 3, 4, 5, 6, 7
+ */
+fun getNums(
+    start: Pair<Int, Int>,
+    numMap: MutableMap<Int, Int> = mutableMapOf()
+): Long {
+
+    if (start.second == 0) // Reached card that hasn't won anymore cards
+        return 0
+
+    // Get list of cards won
+    // Will be 2 10, 3 10, 4 10, 5 10, 6 5
+    var result: Long = start.second.toLong()
+    for ( i in start.first + 1..start.first + start.second) {
+        result += getNums(Pair(i, numMap.getOrDefault(i, 0)), numMap)
+    }
+    println("Card ${start.first} won ${result}")
+
+    return result
+}
