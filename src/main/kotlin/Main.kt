@@ -31,7 +31,7 @@ fun main() {
         numMap[cardNum] = (winningNums.toSet() intersect nums.toSet()).size
     }
     println(numMap)
-    println(getScratchcardsWon(numMap))
+    println(getScratchcardsWon(numMap) + numMap.size)
 }
 
 /**
