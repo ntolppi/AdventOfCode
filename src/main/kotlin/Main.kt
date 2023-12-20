@@ -30,47 +30,51 @@ fun main() {
         println(winningNums.toSet() intersect nums.toSet())
         numMap[cardNum] = (winningNums.toSet() intersect nums.toSet()).size
     }
-    println(numMap)
-    println(getScratchcardsWon(numMap) + numMap.size)
-}
 
-/**
- * Loop through each of the cards
- * Get copies of the numbers won
- * Card 1 wins 6 cards: 2, 3, 4, 5, 6, 7
- * Copy of card 2 wins 10 cards: 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
- * etc...
- */
-fun getScratchcardsWon(
-    numMap: MutableMap<Int, Int>
-): Long {
     var numCardsWon: Long =  0
     numMap.forEach { card ->
         println("Processing Card ${card.key} ${card.value}")
         numCardsWon += getNums(card.toPair(), numMap)
     }
-    return numCardsWon
+
+    println(numMap)
+
+    // Cards won plus number of original cards
+    println(numCardsWon + numMap.size)
 }
+
 
 /**
  * Given a num get the list of copies of the num
  * Example: Given start 1 and steps 6, return 2, 3, 4, 5, 6, 7
+ * @param start         Key, Value of a map to start from
+ * @param numMap        Input map
+ * @param solutionsMap  Map of solved values
+ * @param stopNum       Value to stop at if encountered
  */
 fun getNums(
     start: Pair<Int, Int>,
-    numMap: MutableMap<Int, Int> = mutableMapOf()
+    numMap: MutableMap<Int, Int> = mutableMapOf(),
+    solutionsMap: MutableMap<Int, Long> = mutableMapOf(),
+    stopNum: Long = 0
 ): Long {
 
-    if (start.second == 0) // Reached card that hasn't won anymore cards
+    if (start.second.toLong() == stopNum) // Reached card that hasn't won anymore cards
         return 0
+
+    // Already solved for this number, return solution
+    if (solutionsMap.containsKey(start.first))
+        return solutionsMap.getOrDefault(start.first, stopNum)
 
     // Get list of cards won
     // Will be 2 10, 3 10, 4 10, 5 10, 6 5
     var result: Long = start.second.toLong()
     for ( i in start.first + 1..start.first + start.second) {
-        result += getNums(Pair(i, numMap.getOrDefault(i, 0)), numMap)
+        result += getNums(Pair(i, numMap.getOrDefault(i, stopNum.toInt())), numMap)
     }
-    println("Card ${start.first} won ${result}")
+
+    // Solved, add to solutions map
+    solutionsMap[start.first] = result
 
     return result
 }
