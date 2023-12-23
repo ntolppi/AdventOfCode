@@ -1,4 +1,6 @@
-package net.nzti
+package net.nzti.solutions.day6
+
+import net.nzti.readInput
 
 fun main() {
     val inputList: MutableList<String> = readInput("day6_input.txt")
