@@ -21,16 +21,18 @@ fun main() {
     // Quadratic function
     // Loop through race time / 2
     // if (time pressed (race time - time pressed) > distance to win) increment race won
-    val raceTime: Long = raceTimes.joinToString("").toLong()
-    val raceDistance: Long = distanceToWin.joinToString("").toLong()
-
-    println(raceTime)
-    println(raceDistance)
-
-    var timesWon = 0
-    for (tp in 1..<raceTime)
-        if (tp * (raceTime - tp) > raceDistance)
-            timesWon++
-
-    println(timesWon)
+    val racesWon: MutableList<Int> = mutableListOf()
+    raceTimes.forEachIndexed { idx, raceTime ->
+        var timesWon = 0
+        for (tp in 1..<raceTime)
+            if (tp * (raceTime - tp) > distanceToWin[idx])
+                timesWon++
+        racesWon.add(timesWon)
+    }
+    println(racesWon)
+    var result = 1
+    racesWon.forEach { raceWon ->
+        result *= raceWon
+    }
+    println(result)
 }
