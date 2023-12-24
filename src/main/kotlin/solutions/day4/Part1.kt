@@ -1,5 +1,6 @@
-package net.nzti
+package net.nzti.solutions.day4
 
+import net.nzti.readInput
 import kotlin.math.pow
 
 fun main() {
