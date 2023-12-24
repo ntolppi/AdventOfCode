@@ -1,58 +1,71 @@
 package net.nzti
 
+
 fun main() {
-    val inputList: MutableList<String> = readInput("day7_input.txt")
+    val inputList: MutableList<String> = readInput("day8_input.txt")
 
-    val cards: MutableList<String> = mutableListOf()
-    val bids: MutableList<Int> = mutableListOf()
-    inputList.forEach { card ->
-        val cardAndBid: List<String> = card.split(' ')
-        cards.add(cardAndBid[0])
-        bids.add(cardAndBid[1].toInt())
+    val locations: MutableList<String> = mutableListOf()
+    val locationMap: MutableMap<String, Pair<String, String>> = mutableMapOf()
+    inputList.subList(2, inputList.size).forEach { location ->
+        val locationAndDirections: List<String> = location.split(" = ")
+
+        // NQT = (TXC, RVJ)
+        locations.add(locationAndDirections[0])
+        locationMap[locationAndDirections[0]] = locationAndDirections[1].substring(1, locationAndDirections[1].length - 1).split(", ").zipWithNext()[0]
     }
 
-    val cardOpts: Map<Char, Int> = mapOf('A' to 14, 'K' to 13, 'Q' to 12, 'J' to 11, 'T' to 10, '9' to 9, '8' to 8, '7' to 7, '6' to 6, '5' to 5, '4' to 4, '3' to 3, '2' to 2)
-    val cardComparator = Comparator { card1: String, card2: String ->
-        /*
-        Compare cards, 0 if equal, positive if greater than, negative if less than
-        Card options: A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, 2
-        Hands:
-            5 of a kind AAAAA
-            4 of a kind KAAAA
-            3 of a kind KAAAQ
-            2 pair      KKAAQ
-            1 pair      KKAQJ
-            High Card   AKQJT
-         */
-        val card1Category: String = categorizeCard(card1)
-        val card2Category: String = categorizeCard(card2)
+    val directions: String = inputList[0]
+    var steps: Long = 0
 
-        -1
+    val startingLocations: MutableList<String> = locations.filter { it[it.length - 1] == 'A' }.toMutableList()
+    val currentLocations: MutableList<String> = locations.filter { it[it.length - 1] == 'A' }.toMutableList()
+
+    val locationsFound: MutableMap<String, Set<Long>> = mutableMapOf()
+    startingLocations.forEach { startingLocation ->
+        locationsFound[startingLocation] = setOf()
     }
 
-    println(cards.sortedWith(cardComparator))
-}
+    // while (currentLocations.filter { it[it.length - 1] == 'Z' }.size != currentLocations.size) {
+    while (locationsFound.values.minOf { it.size } < 2) {
+        // Get direction based on current step
+        val currentStep: Int = (steps % directions.length).toInt()
+        steps += 1
+        val dir: Char = directions[currentStep]
+        for (idx in currentLocations.indices) {
+            val location: String = currentLocations[idx]
+            val destination: Pair<String, String> = locationMap.getOrDefault(location, Pair("-1", "-1"))
+            when (dir) {
+                'L' -> {
+                    currentLocations[idx] = destination.first
+                }
+                'R' -> {
+                    currentLocations[idx] = destination.second
+                }
+            }
 
-
-/**
- * Compare cards, 0 if equal, positive if greater than, negative if less than
- * Card options: A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, 2
- * Hands:
- * 5 of a kind AAAAA
- * 4 of a kind KAAAA
- * 3 of a kind KAAAQ
- * 2 pair      KKAAQ
- * 1 pair      KKAQJ
- * High Card   AKQJT
- * @param card  Card to categorize
- * @return      Categorization of the card
- */
-fun categorizeCard(card: String): String {
-    val cardCount: MutableMap<Char, Int> = mutableMapOf()
-    for (i in card.indices) {
-        cardCount[card[i]] = cardCount.getOrDefault(card[i], 0) + 1
+            if (currentLocations[idx][currentLocations[idx].length - 1] == 'Z') {
+                val startingLocation: String = startingLocations[idx]
+                val currentPeriodList: MutableSet<Long> = locationsFound.getOrDefault(startingLocation, setOf()).toMutableSet()
+                currentPeriodList.add(steps)
+                locationsFound[startingLocation] = currentPeriodList
+                println("${startingLocations[idx]} ${currentLocations[idx]} $currentStep")
+                println("$currentLocations $steps")
+            }
+        }
     }
+    println(steps)
+    println(currentLocations)
 
-    val cardSorted: MutableMap<Char, Int> = mutableMapOf()
-    cardCount.entries.sortedBy { it.value }.reversed().forEach { cardSorted[it.key] = it.value }
+    val locationsPeriod: MutableList<Long> = mutableListOf()
+    locationsFound.forEach { locationFound ->
+        println(locationFound)
+        val locationSteps: List<Long> = locationFound.value.toList()
+        locationsPeriod.add(locationSteps[1] - locationSteps[0])
+    }
+    println(locationsPeriod)
+
+    // val locationsPeriodMap: MutableMap<Long, MutableList<Long>> = mutableMapOf()
+    // locationsPeriod.forEach { locationPeriod ->
+    //     locationsPeriodMap[locationPeriod] = 0
+    // }
 }
