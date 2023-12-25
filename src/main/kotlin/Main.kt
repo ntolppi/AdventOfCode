@@ -1,102 +1,79 @@
 package net.nzti
 
+import io.ktor.http.cio.*
+import kotlin.math.exp
 
-class PipeMap(start: Pair<Int, Int>) {
-    val startPipe: Pipe = Pipe(start)
-}
-
-class Pipe(coord: Pair<Int, Int>) {
-    val adjPipes: MutableList<Pair<Int, Int>> = mutableListOf()
-}
-
-class Coord(start: Pair<Int, Int>, val input: MutableList<String>, val pipeMap: PipeMap) {
-    var steps: Int = 0
-    val coords: MutableList<Pair<Int, Int>> = mutableListOf()
-    var pipes: MutableList<Pipe> = mutableListOf()
-    private val dirs: MutableList<Pair<Int, Int>> = mutableListOf()
-
-    init {
-        val adjCoords: MutableList<Pair<Int, Int>> = mutableListOf(
-            Pair(0, -1), Pair(-1, 0), Pair(0, 1), Pair(1, 0)
-        )
-        val validOpts: MutableList<MutableList<Char>> = mutableListOf(
-            mutableListOf('L', '-', 'F'), mutableListOf('7', '|', 'F'),
-            mutableListOf('7', '-', 'J'), mutableListOf('J', '|', 'L')
-        )
-        adjCoords.forEachIndexed adjCoordsForEach@ { idx, coord ->
-            val adjCoord: Pair<Int, Int> = Pair(start.first + coord.first, start.second + coord.second)
-            val adjChar: Char = input[adjCoord.first][adjCoord.second]
-            val validNextChars: MutableList<Char> = validOpts[idx]
-            if (!validNextChars.contains(adjChar))
-                return@adjCoordsForEach
-            coords.add(adjCoord)
-            pipes.add(Pipe(adjCoord))
-            dirs.add(adjCoords[idx])
-        }
-        println(coords)
-        println(dirs)
-        pipeMap.startPipe.adjPipes.addAll(coords)
-    }
-
-    /**
-     * Map of characters to where to go next
-     * Direction is what is done to x, y to move in that direction
-     * | move up (y - 1, x) or down (y + 1, x)
-     * - move left (y, x - 1) or right (y, x + 1)
-     * L move diagonally up-left (y - 1, x - 1) or down-right (y + 1, x + 1)
-     * J move diagonally down-left (y + 1, x - 1) or up-right (y - 1, x + 1)
-     */
-    fun followPipe(): Pair<Int, Int> {
-        steps += 1
-        if (coords[0].first == coords[1].first && coords[0].second == coords[1].second)
-            return coords[0]
-
-
-        for (idx in coords.indices) {
-            getNext(idx)
-        }
-
-        println(coords)
-        return followPipe()
-    }
-
-    private fun getNext(idx: Int) {
-        val coord: Pair<Int, Int> = coords[idx]
-        val dir: Pair<Int, Int> = dirs[idx]
-        val pipeType: Char = input[coord.first][coord.second]
-
-        var nextCoord: Pair<Int, Int> = dir
-        when(pipeType) {
-            'F', 'J' -> nextCoord = Pair(dir.second * -1, dir.first * -1)
-            '|', '-' -> nextCoord = Pair(dir.first, dir.second)
-            'L', '7' -> nextCoord = Pair(dir.second, dir.first)
-        }
-        val nextPipe: Pair<Int, Int> = Pair(coord.first + nextCoord.first, coord.second + nextCoord.second)
-        coords[idx] = nextPipe
-        dirs[idx] = nextCoord
-    }
-}
 
 fun main() {
-    val inputList: MutableList<String> = readInput("day10_input.txt")
+    val inputList: MutableList<String> = readInput("day11_input.txt")
 
-    var start: Pair<Int, Int> = Pair(0, 0)
-    run findStart@{
-        for (y in inputList.indices) {
-            for (x in inputList[y].indices) {
-                if (inputList[y][x] == 'S') {
-                    println("$y, $x")
-                    start = Pair(y, x)
-                    return@findStart
-                }
+    val rowsWithGalaxies: MutableSet<Int> = mutableSetOf()
+    val columnsWithGalaxies: MutableSet<Int> = mutableSetOf()
+    var numGalaxies = 0
+    inputList.forEachIndexed inputListForEach@ { idx, row ->
+        row.forEachIndexed { cidx, column ->
+            if (column == '#') {
+                numGalaxies += 1
+                columnsWithGalaxies.add(cidx)
+                rowsWithGalaxies.add(idx)
             }
         }
     }
 
-    val pipeMap = PipeMap(start)
-    val coord = Coord(start, inputList, pipeMap)
-    coord.followPipe()
-    println(coord.coords)
-    println(start)
-    println(coord.steps)
+    val rowsWithNoGalaxies: Set<Int> = inputList.indices.toSet() subtract rowsWithGalaxies
+
+    val expandedGalaxy: MutableList<String> = mutableListOf()
+    var prvIdx = 0
+    for (idx in rowsWithNoGalaxies.indices) {
+        expandedGalaxy.addAll(inputList.subList(prvIdx, idx + 1))
+        prvIdx = idx
+    }
+    expandedGalaxy.addAll(inputList.subList(prvIdx, inputList.size))
+
+    val columnsWithNoGalaxies: Set<Int> = inputList[0].indices.toSet() subtract columnsWithGalaxies
+    expandedGalaxy.forEachIndexed { idx, row ->
+        prvIdx = 0
+        var expandedColumn: String = ""
+        for (cidx in columnsWithNoGalaxies.indices) {
+            expandedColumn += row.substring(prvIdx, cidx + 1)
+            prvIdx = cidx
+        }
+        expandedColumn += row.substring(prvIdx, inputList[0].length)
+        expandedGalaxy[idx] = expandedColumn
+    }
+
+    expandedGalaxy.forEach {
+        println(it)
+    }
+    println(inputList.size)
+    println(expandedGalaxy.size)
+    println(rowsWithNoGalaxies)
+
+    println(inputList[0].length)
+    println(expandedGalaxy[0].length)
+    println(columnsWithNoGalaxies)
+
+    println(numGalaxies)
+
+    // Get coords for each galaxy expanded
+    val coordsGalaxies: MutableList<Pair<Int, Int>> = mutableListOf()
+
+    expandedGalaxy.forEachIndexed() { ridx, row ->
+        row.forEachIndexed { cidx, column ->
+            if (column == '#')
+                coordsGalaxies.add(Pair(ridx, cidx))
+        }
+    }
+    println(coordsGalaxies)
+    println(coordsGalaxies.size)
+    println(((coordsGalaxies.size * coordsGalaxies.size) + coordsGalaxies.size)/2)
+
+
+    coordsGalaxies.forEachIndexed { idx1, coord1 ->
+        coordsGalaxies.subList(idx1 + 1, coordsGalaxies.size).forEachIndexed { idx2, coord2 ->
+
+        }
+    }
+
+    // Calculate the shortest path to each galaxy
 }
