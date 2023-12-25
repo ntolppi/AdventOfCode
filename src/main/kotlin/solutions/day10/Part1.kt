@@ -1,4 +1,6 @@
-package net.nzti
+package net.nzti.solutions.day10
+
+import net.nzti.readInput
 
 
 class Coord(start: Pair<Int, Int>, val input: MutableList<String>) {
