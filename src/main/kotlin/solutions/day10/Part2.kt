@@ -1,10 +1,12 @@
 package net.nzti.solutions.day10
 
 import net.nzti.readInput
+import kotlin.math.abs
 
 
-class Coord1(start: Pair<Int, Int>, val input: MutableList<String>) {
+class Coord2(val start: Pair<Int, Int>, val input: MutableList<String>) {
     var steps: Int = 0
+    var area: Int = 0
     val coords: MutableList<Pair<Int, Int>> = mutableListOf()
     private val dirs: MutableList<Pair<Int, Int>> = mutableListOf()
 
@@ -18,12 +20,22 @@ class Coord1(start: Pair<Int, Int>, val input: MutableList<String>) {
         )
         adjCoords.forEachIndexed adjCoordsForEach@ { idx, coord ->
             val adjCoord: Pair<Int, Int> = Pair(start.first + coord.first, start.second + coord.second)
+
+            if (adjCoord.first < 0 || adjCoord.second < 0 || adjCoord.second >= input[0].length)
+                return@adjCoordsForEach
             val adjChar: Char = input[adjCoord.first][adjCoord.second]
             val validNextChars: MutableList<Char> = validOpts[idx]
             if (!validNextChars.contains(adjChar))
                 return@adjCoordsForEach
             coords.add(adjCoord)
             dirs.add(adjCoords[idx])
+        }
+        // Calculate area using shoelace formula
+        for (idx in coords.indices) {
+            when (idx) {
+                0 -> area += (start.first * coords[idx].second) - (start.second * coords[idx].first)
+                1 -> area += (coords[idx].first * start.second) - (coords[idx].second * start.first)
+            }
         }
         println(coords)
         println(dirs)
@@ -60,7 +72,16 @@ class Coord1(start: Pair<Int, Int>, val input: MutableList<String>) {
             '|', '-' -> nextCoord = Pair(dir.first, dir.second)
             'L', '7' -> nextCoord = Pair(dir.second, dir.first)
         }
+
+        // Next coord
         val nextPipe: Pair<Int, Int> = Pair(coord.first + nextCoord.first, coord.second + nextCoord.second)
+
+        // Calculate area using shoelace formula
+        when (idx) {
+            0 -> area += (coord.first * nextPipe.second) - (coord.second * nextPipe.first)
+            1 -> area += (nextPipe.first * coord.second) - (nextPipe.second * coord.first)
+        }
+
         coords[idx] = nextPipe
         dirs[idx] = nextCoord
     }
@@ -82,9 +103,20 @@ fun main() {
         }
     }
 
-    val coord = Coord1(start, inputList)
+    val coord = Coord2(start, inputList)
     coord.followPipe()
-    println(coord.coords)
-    println(start)
-    println(coord.steps)
+    println("Start: $start")
+    println("Number of steps to furthest point: ${coord.steps}")
+    coord.area = abs(coord.area) / 2
+    println("Area: ${coord.area}")
+
+    /*
+     * Pick's theorem
+     * A = i + b/2 - 1
+     * A is area
+     * i is interior points
+     * b is boundary points
+     * i = A - b/2 + 1
+     */
+    println("Interior coords: ${coord.area - coord.steps + 1}")
 }

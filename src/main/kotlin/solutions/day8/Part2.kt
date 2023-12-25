@@ -1,6 +1,6 @@
-package net.nzti
+package net.nzti.solutions.day8
 
-import java.math.BigInteger
+import net.nzti.readInput
 
 
 fun main() {
